@@ -1,5 +1,3 @@
-import slate from '@figmentio/slate'
-import cosmos from 'cosmos-lib'
 require('dotenv').config({ path: __dirname + '/.env' });
 import { btcstakingtx } from "@babylonlabs-io/babylon-proto-ts";
 import {
