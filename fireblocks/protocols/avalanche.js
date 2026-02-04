@@ -1,4 +1,4 @@
-require('dotenv').config({ path: __dirname + '/.env' });
+require('dotenv').config({ path: __dirname + '/../.env' });
 const path = require('path');
 const { FireblocksSDK, TransactionStatus, PeerType, TransactionOperation, } = require('fireblocks-sdk');
 const axios = require('axios');

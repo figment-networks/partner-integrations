@@ -1,4 +1,4 @@
-require('dotenv').config({ path: __dirname + '/.env' });
+require('dotenv').config({ path: __dirname + '/../.env' });
 const axios = require('axios');
 const bs58 = require('bs58').default;
 const path = require('path');

@@ -2,7 +2,7 @@ import axios from "axios";
 import { ethers, SigningKey } from "ethers";
 import { config } from "dotenv";
 import path from "path";
-config();
+config({ path: path.join(__dirname, '..', '.env') });
 
 const protocol = path.basename(__filename, '.ts').toUpperCase();
 const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
