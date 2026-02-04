@@ -356,14 +356,14 @@ async function sleep(seconds) {
     // Export from C-chain
     console.log('\n=== Exporting from C-chain ===');
     try {
-      // const { signingPayload: exportSigningPayload, unsignedTransactionSerialized: exportUnsignedTx } = await exportFromC(cChainAddress, pChainAddress, AMOUNT_TO_BRIDGE, NETWORK);
-      // console.log('Export transaction created successfully');
+      const { signingPayload: exportSigningPayload, unsignedTransactionSerialized: exportUnsignedTx } = await exportFromC(cChainAddress, pChainAddress, AMOUNT_TO_BRIDGE, NETWORK);
+      console.log('Export transaction created successfully');
 
-      // const exportSignedPayload = addVToSignature(await signWithFireblocks(exportSigningPayload));
-      // console.log('Transaction signed successfully');
+      const exportSignedPayload = addVToSignature(await signWithFireblocks(exportSigningPayload));
+      console.log('Transaction signed successfully');
 
-      // const exportTxHash = (await broadcastTx(NETWORK, exportSignedPayload, exportUnsignedTx)).data.transaction_hash;
-      // console.log('Export from C-chain transaction successful! View here: ', explorerUrl(exportTxHash));
+      const exportTxHash = (await broadcastTx(NETWORK, exportSignedPayload, exportUnsignedTx)).data.transaction_hash;
+      console.log('Export from C-chain transaction successful! View here: ', explorerUrl(exportTxHash));
 
       // // Wait for 5 seconds to ensure the export is complete
       // await sleep(5);
@@ -390,22 +390,22 @@ async function sleep(seconds) {
       // console.log('Delegate to validator transaction successful! View here: ', explorerUrl(delegateTxHash, true));
 
       // Bridge P->C
-      const { signingPayload: exportSigningPayload, unsignedTransactionSerialized: exportUnsignedTx } = await exportFromC(pChainAddress, cChainAddress, AMOUNT_TO_BRIDGE, NETWORK);
-      console.log('Export transaction created successfully');
+      // const { signingPayload: exportSigningPayload, unsignedTransactionSerialized: exportUnsignedTx } = await exportFromC(pChainAddress, cChainAddress, AMOUNT_TO_BRIDGE, NETWORK);
+      // console.log('Export transaction created successfully');
 
-      const exportSignedPayload = addVToSignature(await signWithFireblocks(exportSigningPayload));
-      console.log('Transaction signed successfully');
+      // const exportSignedPayload = addVToSignature(await signWithFireblocks(exportSigningPayload));
+      // console.log('Transaction signed successfully');
 
-      const exportTxHash = (await broadcastTx(NETWORK, exportSignedPayload, exportUnsignedTx)).data.transaction_hash;
-      console.log('Export from P-chain transaction successful! View here: ', explorerUrl(exportTxHash));
+      // const exportTxHash = (await broadcastTx(NETWORK, exportSignedPayload, exportUnsignedTx)).data.transaction_hash;
+      // console.log('Export from P-chain transaction successful! View here: ', explorerUrl(exportTxHash));
 
-      console.log('\n=== Importing to P-chain ===');
-      const { signingPayload: importSigningPayload, unsignedTransactionSerialized: importUnsignedTx } = await importToP(pChainAddress, cChainAddress, NETWORK);
+      // console.log('\n=== Importing to P-chain ===');
+      // const { signingPayload: importSigningPayload, unsignedTransactionSerialized: importUnsignedTx } = await importToP(pChainAddress, cChainAddress, NETWORK);
 
-      const importSignedPayload = addVToSignature(await signWithFireblocks(importSigningPayload));
+      // const importSignedPayload = addVToSignature(await signWithFireblocks(importSigningPayload));
 
-      const importTxHash = (await broadcastTx(NETWORK, importSignedPayload, importUnsignedTx)).data.transaction_hash;
-      console.log('Import to C-chain transaction successful! View here: ', explorerUrl(importTxHash, true));
+      // const importTxHash = (await broadcastTx(NETWORK, importSignedPayload, importUnsignedTx)).data.transaction_hash;
+      // console.log('Import to C-chain transaction successful! View here: ', explorerUrl(importTxHash, true));
 
     } catch (error) {
       console.error('Error in transaction flow:', error);
