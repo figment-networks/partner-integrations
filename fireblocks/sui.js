@@ -1,7 +1,9 @@
 require('dotenv').config({ path: __dirname + '/.env' });
 const axios = require('axios');
 const crypto = require('crypto');
+const path = require('path');
 
+const protocol = path.basename(__filename, '.js').toUpperCase();
 const secretKey = process.env.FIREBLOCKS_SECRET_KEY;
 const apiKey = process.env.FIREBLOCKS_API_KEY;
 
@@ -10,7 +12,7 @@ const fireblocks = new FireblocksSDK(secretKey, apiKey);
 
 /* Configuration */
 const NETWORK = 'testnet';
-const EXPLORER_BASE_URL = 'https://suiexplorer.com/tx/';
+const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 const FIGMENT_API_URL = 'https://api.figment.io/sui';
 const VAULT_ACCOUNT_ID = 1;
 const STAKE_AMOUNT = 1; // Amount in SUI (will be converted to mist)

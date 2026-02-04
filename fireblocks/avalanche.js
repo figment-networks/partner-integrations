@@ -1,9 +1,12 @@
 require('dotenv').config({ path: __dirname + '/.env' });
-
+const path = require('path');
 const { FireblocksSDK, TransactionStatus, PeerType, TransactionOperation, } = require('fireblocks-sdk');
 const axios = require('axios');
 const avalanche = require('@avalabs/avalanchejs');
 const crypto = require('crypto');
+
+const protocol = path.basename(__filename, '.js').toUpperCase();
+const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 
 const AMOUNT_TO_BRIDGE = 30;
 const AMOUNT_TO_DELEGATE = 1;
@@ -331,12 +334,10 @@ async function broadcastTx(network, signedPayload, unsignedTransactionSerialized
  * @returns {string} - The full SnowTrace explorer URL
  */
 function explorerUrl(txHash, pChain = false) {
-  let baseUrl = TESTNET ? 'subnets-test.avax.network' : 'subnets.avax.network';
-
   if (pChain) {
-    return `https://${baseUrl}/p-chain/tx/${txHash}`;
+    return `${EXPLORER_BASE_URL}/p-chain/tx/${txHash}`;
   } else {
-    return `https://${baseUrl}/c-chain/tx/${txHash}`;
+    return `${EXPLORER_BASE_URL}/c-chain/tx/${txHash}`;
   }
 }
 

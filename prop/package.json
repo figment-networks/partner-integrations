@@ -1,0 +1,23 @@
+{
+  "name": "prop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bitcoin.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babylonlabs-io/babylon-proto-ts": "^1.22.1",
+    "@cosmjs/encoding": "^0.37.0",
+    "@cosmjs/proto-signing": "^0.37.0",
+    "@cosmjs/stargate": "^0.37.0",
+    "@solana/web3.js": "^1.98.4",
+    "axios": "^1.13.2",
+    "bs58": "^6.0.0",
+    "ethers": "^6.16.0",
+    "js-sha256": "^0.11.1",
+    "near-api-js": "^6.5.1"
+  }
+}

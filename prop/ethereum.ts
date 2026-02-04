@@ -5,7 +5,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 config();
 
-const __filename = fileURLToPath(import.meta.url);
 const protocol = path.basename(__filename, '.js').toUpperCase();
 const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 

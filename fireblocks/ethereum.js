@@ -1,15 +1,17 @@
 require('dotenv').config({ path: __dirname + '/.env' });
 const axios = require('axios');
+const path = require('path');
 const { FireblocksSDK, TransactionOperation, TransactionStatus, PeerType } = require('fireblocks-sdk');
 
+const protocol = path.basename(__filename, '.js').toUpperCase();
 const secretKey = process.env.FIREBLOCKS_SECRET_KEY;
 const apiKey = process.env.FIREBLOCKS_API_KEY;
 
 const fireblocksApiClient = new FireblocksSDK(secretKey, apiKey);
 
 /* Configuration */
+const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 const NETWORK = 'hoodi';
-const EXPLORER_BASE_URL = `https://${NETWORK === 'hoodi' ? 'hoodi.' : ''}etherscan.io/tx/`;
 const FIGMENT_API_URL = 'https://api.figment.io/ethereum';
 const VAULT_ACCOUNT_ID = "1";
 const FIREBLOCKS_ASSET_ID='ETH_TEST_HOODI';

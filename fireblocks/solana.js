@@ -1,6 +1,8 @@
 require('dotenv').config({ path: __dirname + '/.env' });
 const axios = require('axios');
+const path = require('path');
 
+const protocol = path.basename(__filename, '.js').toUpperCase();
 const secretKey = process.env.FIREBLOCKS_SECRET_KEY;
 const apiKey = process.env.FIREBLOCKS_API_KEY;
 
@@ -8,8 +10,8 @@ const { FireblocksSDK, TransactionStatus, PeerType } = require("fireblocks-sdk")
 const fireblocks = new FireblocksSDK(secretKey, apiKey);
 
 /* Configuration */
+const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 const NETWORK = 'devnet';
-const EXPLORER_BASE_URL = 'https://explorer.solana.com/tx/';
 const FIGMENT_API_URL = 'https://api.figment.io/solana';
 const VAULT_ACCOUNT_ID = 1;
 const STAKE_AMOUNT = 0.01;

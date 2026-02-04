@@ -1,17 +1,19 @@
 require('dotenv').config({ path: __dirname + '/.env' });
 const axios = require('axios');
 const bs58 = require('bs58');
+const path = require('path');
 const { 
   Keypair, 
   PublicKey,
   Transaction
 } = require('@solana/web3.js');
 
+const protocol = path.basename(__filename, '.js').toUpperCase();
 const privateKey = process.env.SOL_PRIVATE_KEY;
 
 /* Configuration */
 const NETWORK = 'devnet';
-const EXPLORER_BASE_URL = 'https://explorer.solana.com/tx/';
+const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 const FIGMENT_API_URL = 'https://api.figment.io/solana';
 const STAKE_AMOUNT = 0.01;
 const VALIDATOR_VOTE_ACCOUNT = '21Jxcw74j5SvajRKE3PvNifu26CVorF7DF8HyanKNzZ3';
