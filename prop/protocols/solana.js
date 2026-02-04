@@ -11,12 +11,14 @@ const {
 const protocol = path.basename(__filename, '.js').toUpperCase();
 const privateKey = process.env[`${protocol}_PRIVATE_KEY`];
 
-/* Configuration */
-const NETWORK = 'devnet';
+/* ============ CONFIGURE THESE ============ */
+const NETWORK = 'devnet';                    // 'devnet' | 'testnet' | 'mainnet-beta'
+const STAKE_AMOUNT = 0.01;                   // Amount in SOL
+const VALIDATOR_VOTE_ACCOUNT = '21Jxcw74j5SvajRKE3PvNifu26CVorF7DF8HyanKNzZ3';
+/* ========================================= */
+
 const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 const FIGMENT_API_URL = 'https://api.figment.io/solana';
-const STAKE_AMOUNT = 0.01;
-const VALIDATOR_VOTE_ACCOUNT = '21Jxcw74j5SvajRKE3PvNifu26CVorF7DF8HyanKNzZ3';
 const API_HEADERS = {
   'x-api-key': process.env.FIGMENT_API_KEY
 };

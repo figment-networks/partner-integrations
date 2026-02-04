@@ -4,20 +4,22 @@ const path = require('path');
 const axios = require('axios');
 const { FireblocksSDK, TransactionStatus, PeerType, TransactionOperation } = require("fireblocks-sdk");
 
-// Configuration
 const protocol = path.basename(__filename, '.js').toUpperCase();
+
+/* ============ CONFIGURE THESE ============ */
+const TESTNET = false;                       // true for testnet, false for preprod
+const DELEGATOR_ADDRESS = "addr_test1qrswqv7wx5lq9d7p00qmm80ntnja38wm2rq7xd8s0cs767yy4n25eghca4kf20q9tkfun39j3fz03vf9d8nkrvskpchsdw7hqq";
+const VALIDATOR_ADDRESS = "pool13m26ky08vz205232k20u8ft5nrg8u68klhn0xfsk9m4gsqsc44v";
+const VAULT_ACCOUNT_ID = 1;                  // Your Fireblocks vault ID
+/* ========================================= */
+
 const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 const FIGMENT_API_KEY = process.env.FIGMENT_API_KEY;
 const FIREBLOCKS_SECRET_KEY = process.env.FIREBLOCKS_SECRET_KEY;
 const FIREBLOCKS_API_KEY = process.env.FIREBLOCKS_API_KEY;
+const NETWORK = TESTNET ? "testnet" : "preprod";
 
 const fireblocks = new FireblocksSDK(FIREBLOCKS_SECRET_KEY, FIREBLOCKS_API_KEY);
-
-const TESTNET = false;
-const VAULT_ACCOUNT_ID = 1;
-const NETWORK = TESTNET ? "testnet" : "preprod";
-const DELEGATOR_ADDRESS = "addr_test1qrswqv7wx5lq9d7p00qmm80ntnja38wm2rq7xd8s0cs767yy4n25eghca4kf20q9tkfun39j3fz03vf9d8nkrvskpchsdw7hqq";
-const VALIDATOR_ADDRESS = "pool13m26ky08vz205232k20u8ft5nrg8u68klhn0xfsk9m4gsqsc44v";
 
 const HEADERS = {
   'accept': 'application/json',

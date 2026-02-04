@@ -11,14 +11,16 @@ const apiKey = process.env.FIREBLOCKS_API_KEY;
 const { FireblocksSDK, TransactionStatus, PeerType } = require("fireblocks-sdk");
 const fireblocks = new FireblocksSDK(secretKey, apiKey);
 
-/* Configuration */
-const NETWORK = 'testnet';
+/* ============ CONFIGURE THESE ============ */
+const NETWORK = 'testnet';                   // 'testnet' | 'mainnet'
+const STAKE_AMOUNT = 1;                      // Amount in SUI
+const VALIDATOR_ADDRESS = '0xd32da9c87c1164f7c686067067e37cc3bdd8ad3fc7ef62d5f24c5dc908bb5fcb';
+const VAULT_ACCOUNT_ID = 1;                  // Your Fireblocks vault ID
+const FIREBLOCKS_ASSET_ID = "SUI_TEST";      // 'SUI_TEST' for testnet, 'SUI' for mainnet
+/* ========================================= */
+
 const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 const FIGMENT_API_URL = 'https://api.figment.io/sui';
-const VAULT_ACCOUNT_ID = 1;
-const STAKE_AMOUNT = 1; // Amount in SUI (will be converted to mist)
-const VALIDATOR_ADDRESS = '0xd32da9c87c1164f7c686067067e37cc3bdd8ad3fc7ef62d5f24c5dc908bb5fcb'; // Replace with actual validator address
-const FIREBLOCKS_ASSET_ID = "SUI_TEST";
 const API_HEADERS = {
   'x-api-key': process.env.FIGMENT_API_KEY
 };

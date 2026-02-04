@@ -6,16 +6,19 @@ const avalanche = require('@avalabs/avalanchejs');
 const crypto = require('crypto');
 
 const protocol = path.basename(__filename, '.js').toUpperCase();
-const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 
-const AMOUNT_TO_BRIDGE = 30;
-const AMOUNT_TO_DELEGATE = 1;
-const VALIDATOR_ADDRESS = 'NodeID-PmN1QWcH3MY4DuVUMsbx9QysvgyGrpCPZ'; // if testnet, pick from https://subnets-test.avax.network/validators/dashboard/
-const DELEGATION_START_TIME = Math.floor(Date.now() / 1000) + 5 * 60 * 60; // 5 hours from now
-const DELEGATION_END_TIME = Math.floor(Date.now() / 1000) + 29 * 60 * 60; // 29 hours from now, for a 24 hour staking period
-const TESTNET = true;
+/* ============ CONFIGURE THESE ============ */
+const TESTNET = true;                        // true for Fuji testnet, false for mainnet
+const AMOUNT_TO_BRIDGE = 30;                 // Amount in AVAX to bridge C->P chain
+const AMOUNT_TO_DELEGATE = 1;                // Amount in AVAX to delegate
+const VALIDATOR_ADDRESS = 'NodeID-PmN1QWcH3MY4DuVUMsbx9QysvgyGrpCPZ'; // Pick from https://subnets-test.avax.network/validators/dashboard/
+const DELEGATION_START_TIME = Math.floor(Date.now() / 1000) + 5 * 60 * 60;  // 5 hours from now
+const DELEGATION_END_TIME = Math.floor(Date.now() / 1000) + 29 * 60 * 60;   // 29 hours from now
+const VAULT_ACCOUNT_ID = 1;                  // Your Fireblocks vault ID
+/* ========================================= */
+
+const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 const ASSET_ID = TESTNET ? 'AVAXTEST' : 'AVAX';
-const VAULT_ACCOUNT_ID = 1;
 const NETWORK = TESTNET ? 'fuji' : 'mainnet';
 const HEADERS = {
   'Content-Type': 'application/json',

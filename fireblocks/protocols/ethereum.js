@@ -9,14 +9,16 @@ const apiKey = process.env.FIREBLOCKS_API_KEY;
 
 const fireblocksApiClient = new FireblocksSDK(secretKey, apiKey);
 
-/* Configuration */
+/* ============ CONFIGURE THESE ============ */
+const NETWORK = 'hoodi';                     // 'hoodi' (testnet) | 'mainnet'
+const VALIDATORS_COUNT = 1;                  // Number of validators to create
+const VAULT_ACCOUNT_ID = "1";                // Your Fireblocks vault ID
+const FIREBLOCKS_ASSET_ID = 'ETH_TEST_HOODI'; // 'ETH_TEST_HOODI' for testnet, 'ETH' for mainnet
+const CONTRACT_ADDRESS = '0xA627f94a8F94E4713d38F52aC3a6377B0a111d47'; // Figment staking contract
+/* ========================================= */
+
 const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
-const NETWORK = 'hoodi';
 const FIGMENT_API_URL = 'https://api.figment.io/ethereum';
-const VAULT_ACCOUNT_ID = "1";
-const FIREBLOCKS_ASSET_ID='ETH_TEST_HOODI';
-const VALIDATORS_COUNT = 1;
-const CONTRACT_ADDRESS = '0xA627f94a8F94E4713d38F52aC3a6377B0a111d47';
 const API_HEADERS = {
   'accept': 'application/json',
   'content-type': 'application/json',

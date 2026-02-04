@@ -9,14 +9,16 @@ const apiKey = process.env.FIREBLOCKS_API_KEY;
 const { FireblocksSDK, TransactionStatus, PeerType } = require("fireblocks-sdk");
 const fireblocks = new FireblocksSDK(secretKey, apiKey);
 
-/* Configuration */
-const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
-const NETWORK = 'devnet';
-const FIGMENT_API_URL = 'https://api.figment.io/solana';
-const VAULT_ACCOUNT_ID = 1;
-const STAKE_AMOUNT = 0.01;
+/* ============ CONFIGURE THESE ============ */
+const NETWORK = 'devnet';                    // 'devnet' | 'testnet' | 'mainnet-beta'
+const STAKE_AMOUNT = 0.01;                   // Amount in SOL
 const VALIDATOR_VOTE_ACCOUNT = '21Jxcw74j5SvajRKE3PvNifu26CVorF7DF8HyanKNzZ3';
-const FIREBLOCKS_ASSET_ID = "SOL_TEST";
+const VAULT_ACCOUNT_ID = 1;                  // Your Fireblocks vault ID
+const FIREBLOCKS_ASSET_ID = "SOL_TEST";      // 'SOL_TEST' for devnet, 'SOL' for mainnet
+/* ========================================= */
+
+const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
+const FIGMENT_API_URL = 'https://api.figment.io/solana';
 const API_HEADERS = {
   'x-api-key': process.env.FIGMENT_API_KEY
 };

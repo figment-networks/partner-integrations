@@ -15,15 +15,21 @@ const headers = {
   "content-type": "application/json",
   "x-api-key": apiKey,
 };
-const withdrawalAddress = process.env.WITHDRAWAL_ADDRESS; // Replace with your actual withdrawal address
+/* ============ CONFIGURE THESE ============ */
+const NETWORK = "hoodi";                     // 'hoodi' (testnet) | 'mainnet'
+const VALIDATORS_COUNT = 1;                  // Number of validators to create
+const STAKE_AMOUNT = "32.5";                 // Amount in ETH (32 ETH minimum per validator)
+const REGION = "ca-central-1";               // AWS region for validator
+/* ========================================= */
 
-//Supposed to be user input
+const withdrawalAddress = process.env.WITHDRAWAL_ADDRESS;
+
 const data = {
-  network: "hoodi",
-  validators_count: 1,
-  amount: "32.5",
+  network: NETWORK,
+  validators_count: VALIDATORS_COUNT,
+  amount: STAKE_AMOUNT,
   withdrawal_address: withdrawalAddress,
-  region: "ca-central-1",
+  region: REGION,
   credentials_prefix: '0x02',
 };
 
