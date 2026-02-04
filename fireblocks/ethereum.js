@@ -29,7 +29,6 @@ const API_HEADERS = {
  */
 async function createValidators() {
   const withdrawalAddress = (await fireblocksApiClient.getDepositAddresses(VAULT_ACCOUNT_ID, FIREBLOCKS_ASSET_ID))[0].address;
-  console.log(withdrawalAddress);
   try {
     const response = await axios.post(`${FIGMENT_API_URL}/validators`, {
       network: NETWORK,
@@ -121,7 +120,7 @@ async function main() {
     // Wait for the transaction to complete
     const completedTx = await waitForTxCompletion(fbTx);
     
-    const explorerUrl = `${EXPLORER_BASE_URL}${completedTx.txHash}`;
+    const explorerUrl = `${EXPLORER_BASE_URL}/tx/${completedTx.txHash}`;
     console.log(`Created ${VALIDATORS_COUNT} validator(s) successfully!`);
     console.log('View transaction on explorer:', explorerUrl);
   } catch (error) {

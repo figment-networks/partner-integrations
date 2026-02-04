@@ -106,7 +106,7 @@ async function main() {
         const signedTx = await signWithFireblocks(unsignedTranasctionSerializedBase64);
         let txHash = signedTx.txHash;
 
-        const explorerUrl = `${EXPLORER_BASE_URL}${txHash}${NETWORK === 'devnet' ? '?cluster=devnet' : ''}`;
+        const explorerUrl = `${EXPLORER_BASE_URL}/tx/${txHash}${NETWORK === 'devnet' ? '?cluster=devnet' : ''}`;
         console.log(`Staked ${STAKE_AMOUNT} SOL to ${VALIDATOR_VOTE_ACCOUNT} successfully!`);
         console.log('View transaction on explorer:', explorerUrl);
     } catch (error) {

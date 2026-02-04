@@ -1,8 +1,12 @@
+require('dotenv').config({ path: __dirname + '/.env' });
 const fs = require('fs');
+const path = require('path');
 const axios = require('axios');
 const { FireblocksSDK, TransactionStatus, PeerType, TransactionOperation } = require("fireblocks-sdk");
 
 // Configuration
+const protocol = path.basename(__filename, '.js').toUpperCase();
+const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
 const FIGMENT_API_KEY = process.env.FIGMENT_API_KEY;
 const FIREBLOCKS_SECRET_KEY = process.env.FIREBLOCKS_SECRET_KEY;
 const FIREBLOCKS_API_KEY = process.env.FIREBLOCKS_API_KEY;
@@ -81,10 +85,12 @@ async function broadcastTransaction(unsignedTx, signedMessages) {
     console.log(`Signed (${((signingTime - creationTime) / 1000).toFixed(2)}s, ${signedMessages.length} signature${signedMessages.length !== 1 ? 's' : ''})`);
 
     console.log('Broadcasting...');
-    const txHash = await broadcastTransaction(unsignedTx, signedMessages);
+    let txHash = await broadcastTransaction(unsignedTx, signedMessages);
+    txHash = txHash.data.tx_hash;
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
     
-    console.log(`\nDelegation completed! (${totalTime}s)\nTransaction Hash: ${typeof txHash === 'string' ? txHash : JSON.stringify(txHash)}\nAll done!`);
+    const explorerUrl = `${EXPLORER_BASE_URL}/transaction/${txHash}`;
+    console.log(`\nDelegation completed! (${totalTime}s)\nView transaction on explorer: ${explorerUrl}`);
 
   } catch (error) {
     console.error('\nDelegation failed');
