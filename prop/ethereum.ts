@@ -86,10 +86,14 @@ const generateStakeTx = async (data: any): Promise<{
  */
 const generateSignatureFromUnsignedTxHash = async (
   unsignedTransactionHash: string,
-  privateKey: string
+  privateKey: string | undefined
 ): Promise<string> => {
   try {
     console.log("=== Generating Signature ===");
+
+    if (!privateKey) {
+      throw new Error("Private key is required");
+    }
 
     // 1. Format private key (ensure 0x prefix)
     const formattedPrivateKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
