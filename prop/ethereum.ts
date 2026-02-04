@@ -2,15 +2,12 @@ import axios from "axios";
 import { ethers, SigningKey } from "ethers";
 import { config } from "dotenv";
 import path from "path";
-import { fileURLToPath } from "url";
 config();
 
-const protocol = path.basename(__filename, '.js').toUpperCase();
+const protocol = path.basename(__filename, '.ts').toUpperCase();
 const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
-
-// Your MetaMask private key (KEEP THIS SECRET)
-const privateKey = process.env.PRIVATE_KEY; // Replace with your actual private key
-const apiKey = process.env.API_KEY; // Replace with your actual API key
+const privateKey = process.env[`${protocol}_PRIVATE_KEY`];
+const apiKey = process.env.FIGMENT_API_KEY; // Replace with your actual API key
 
 // API request headers for the Figment API
 const headers = {
@@ -157,7 +154,7 @@ async function main() {
   // Broadcast transaction
   let txHash = await broadcastTransaction(signature, unsigned_transaction_serialized)
   
-  console.log(`broadcasted transaction. explorer link: ${EXPLORER_BASE_URL}${txHash}`)
+  console.log(`broadcasted transaction. explorer link: ${EXPLORER_BASE_URL}/tx/${txHash}`)
 
 }
 

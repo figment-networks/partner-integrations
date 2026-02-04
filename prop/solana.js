@@ -1,6 +1,6 @@
 require('dotenv').config({ path: __dirname + '/.env' });
 const axios = require('axios');
-const bs58 = require('bs58');
+const bs58 = require('bs58').default;
 const path = require('path');
 const { 
   Keypair, 
@@ -9,7 +9,7 @@ const {
 } = require('@solana/web3.js');
 
 const protocol = path.basename(__filename, '.js').toUpperCase();
-const privateKey = process.env.SOL_PRIVATE_KEY;
+const privateKey = process.env[`${protocol}_PRIVATE_KEY`];
 
 /* Configuration */
 const NETWORK = 'devnet';
@@ -18,7 +18,7 @@ const FIGMENT_API_URL = 'https://api.figment.io/solana';
 const STAKE_AMOUNT = 0.01;
 const VALIDATOR_VOTE_ACCOUNT = '21Jxcw74j5SvajRKE3PvNifu26CVorF7DF8HyanKNzZ3';
 const API_HEADERS = {
-  'x-api-key': process.env.API_KEY
+  'x-api-key': process.env.FIGMENT_API_KEY
 };
 
 /**
@@ -98,7 +98,7 @@ async function main() {
     // Broadcast the transaction
     const txHash = await broadcastStakeTransaction(signedTx);
 
-    const explorerUrl = `${EXPLORER_BASE_URL}${txHash}${NETWORK === 'devnet' ? '?cluster=devnet' : ''}`;
+    const explorerUrl = `${EXPLORER_BASE_URL}/tx/${txHash}${NETWORK === 'devnet' ? '?cluster=devnet' : ''}`;
     console.log(`Staked ${STAKE_AMOUNT} SOL to ${VALIDATOR_VOTE_ACCOUNT} successfully!`);
     console.log('View transaction on explorer:', explorerUrl);
   } catch (error) {
