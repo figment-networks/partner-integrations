@@ -1,237 +1,282 @@
-/************************ WIP ************************/
-require('dotenv').config({ path: __dirname + '/../.env' });
-const axios = require('axios');
-const crypto = require('crypto');
-const path = require('path');
+import { Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519';
+import { messageWithIntent } from '@mysten/sui/cryptography';
+import { fromHex, toBase64 } from '@mysten/sui/utils';
+import axios from 'axios';
+import fs from "fs";
+import { FireblocksSDK, PeerType, TransactionOperation } from "fireblocks-sdk";
+import { config } from "dotenv";
+config();
 
-const protocol = path.basename(__filename, '.js').toUpperCase();
-const secretKey = process.env.FIREBLOCKS_SECRET_KEY;
-const apiKey = process.env.FIREBLOCKS_API_KEY;
+// Configuration
+const API_KEY = process.env.FIGMENT_API_KEY || ''; // Replace with your actual Figment API key
+const fireblocks_secretKey = process.env.FIREBLOCKS_SECRET_KEY || '';
+const fireblocks_apiKey = process.env.FIREBLOCKS_API_KEY || '';
+const fireblocks = new FireblocksSDK(fireblocks_secretKey, fireblocks_apiKey);
 
-const { FireblocksSDK, TransactionStatus, PeerType } = require("fireblocks-sdk");
-const fireblocks = new FireblocksSDK(secretKey, apiKey);
+// User Inputs
+const stakeAmount = process.env.SUI_STAKE_AMOUNT ? Number(process.env.SUI_STAKE_AMOUNT) : 1;
+const validatorAccount = process.env.SUI_VALIDATOR_ACCOUNT || '0x22b35a7481fb136e5585c43421cf8ab49d0e219e902dedc40c2778acdcc7bc9c'; //Figment validator address on testnet "0x22b35a7481fb136e5585c43421cf8ab49d0e219e902dedc40c2778acdcc7bc9c";
+const vaultAccountId = process.env.FIREBLOCKS_VAULT_ID || ''; // Your Fireblocks vault ID
+const network = process.env.NETWORK || "testnet";
 
-/* ============ CONFIGURE THESE ============ */
-const NETWORK = 'testnet';                   // 'testnet' | 'mainnet'
-const STAKE_AMOUNT = 1;                      // Amount in SUI
-const VALIDATOR_ADDRESS = '0xd32da9c87c1164f7c686067067e37cc3bdd8ad3fc7ef62d5f24c5dc908bb5fcb';
-const VAULT_ACCOUNT_ID = 1;                  // Your Fireblocks vault ID
-const FIREBLOCKS_ASSET_ID = "SUI_TEST";      // 'SUI_TEST' for testnet, 'SUI' for mainnet
-/* ========================================= */
 
-const EXPLORER_BASE_URL = process.env[`${protocol}_EXPLORER_URL`];
-const FIGMENT_API_URL = 'https://api.figment.io/sui';
-const API_HEADERS = {
-  'x-api-key': process.env.FIGMENT_API_KEY
+async function generateStakePayload(amount, validatorAccount, delegatorAccount) {
+    const API_URL = 'https://api.figment.io/sui/stake';
+    // Define request body parameters
+    const requestBody = {
+        network: network,
+        amount: amount,   
+        validator_address: validatorAccount,
+        delegator_address: delegatorAccount
+    };
+
+    try {
+        const response = await axios.post(API_URL, requestBody, {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'x-api-key': API_KEY
+            }
+        });
+
+        console.log('Response:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error:', error.response ? error.response.data : error.message);
+        console.error('Error:', JSON.stringify(error, null, 2));
+    }
 };
 
-/**
- * Create the stake transaction using Figment API
- * @param {string} walletAddress - The funding wallet address
- * @param {string} validatorAddress - The validator address to stake to
- * @returns {Promise<Object>} - The response containing unsigned transaction and signing payload
- */
-async function createStakeTransaction(walletAddress, validatorAddress) {
-    const response = await axios.post(`${FIGMENT_API_URL}/stake`, {
-        delegator_address: walletAddress,
-        validator_address: validatorAddress,
-        amount: STAKE_AMOUNT,
-        network: NETWORK
-    }, { headers: API_HEADERS });
 
-    return response.data.data;
+async function broadcast(unsigned_transaction_serialized, signature) {
+    const API_URL = 'https://api.figment.io/sui/broadcast';
+    // Define request body parameters
+    const requestBody = {
+        network: network,
+        unsigned_transaction_serialized: unsigned_transaction_serialized,
+        signature: signature
+    };
+
+    try {
+        const response = await axios.post(API_URL, requestBody, {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'x-api-key': API_KEY
+            }
+        });
+
+        return response;
+    } catch (error) {
+        console.log('Error:', JSON.stringify(error, null, 2));
+        console.error('Error:', error.response ? error.response.data : error.message);
+        
+    }
+};
+
+
+/**
+ * Creates the intent message digest that Sui requires for transaction signing
+ * Uses dynamic import to avoid direct dependency on blake2b
+ */
+async function createIntentMessageDigest(transactionBytes) {
+  // Dynamically import blake2b (same library the SDK uses internally)
+  const { blake2b } = await import('@noble/hashes/blake2b');
+  
+  // Create intent message
+  const intentMessage = messageWithIntent('TransactionData', transactionBytes);
+  
+  // Hash the intent message with blake2b (32 bytes output)
+  const digest = blake2b(intentMessage, { dkLen: 32 });
+  
+  return digest;
 }
 
 /**
- * Broadcast a signed transaction using Figment API
- * @param {string} signedTransaction - The signed transaction
- * @returns {Promise<string>} - The transaction hash
+ * Verifies that the Fireblocks signature is valid for the transaction
  */
-async function broadcastTransaction(signedTransaction, unsignedTransactionSerialized) {
-  const prefixedSignedTransaction = signedTransaction.startsWith('0x') ? signedTransaction : `0x${signedTransaction}`;
-  const prefixedUnsignedTransactionSerialized = unsignedTransactionSerialized.startsWith('0x') ? unsignedTransactionSerialized : `0x${unsignedTransactionSerialized}`;
-  console.log('prefixedSignedTransaction', prefixedSignedTransaction);
-  console.log('prefixedUnsignedTransactionSerialized', prefixedUnsignedTransactionSerialized);
-    const response = await axios.post(`${FIGMENT_API_URL}/broadcast`, {
-        signed_transaction: prefixedSignedTransaction,
-        unsigned_transaction_serialized: prefixedUnsignedTransactionSerialized,
-        network: NETWORK
-    }, { headers: API_HEADERS });
+async function verifyFireblocksSignature(
+  transactionBytes,
+  fullSig,
+  publicKey
+) {
+  try {
+    // Create intent message digest (what Sui expects to be signed)
+    const digest = await createIntentMessageDigest(transactionBytes);
+    
+    // Get signature and public key
+    const signatureBytes = fromHex(fullSig);
+    const publicKeyBytes = fromHex(publicKey);
+    const publicKeyObj = new Ed25519PublicKey(publicKeyBytes);
+    
+    // Verify signature over the digest
+    return await publicKeyObj.verify(digest, signatureBytes);
+  } catch (error) {
+    console.error('Verification error:', error);
+    return false;
+  }
+}
 
-    return response.data.transaction_hash;
+async function signSuiTxWithFireblocks(signing_payload) {
+  // Convert hex to bytes
+  const transactionBytes = fromHex(signing_payload);
+  
+  // Create the intent message digest that Sui requires
+  // This is what Fireblocks should sign, NOT the raw transaction bytes
+  const intentMessageDigest = await createIntentMessageDigest(transactionBytes);
+  
+  // Convert digest to hex for Fireblocks
+  const digestHex = Buffer.from(intentMessageDigest).toString('hex');
+  
+  console.log('Raw transaction bytes length:', transactionBytes.length);
+  console.log('Intent message digest (hex):', digestHex);
+  console.log('Intent message digest length:', intentMessageDigest.length, 'bytes');
+  
+  // 1. Create a RAW transaction for signing
+  // IMPORTANT: Send the intent message digest, not the raw transaction!
+  const txRes = await fireblocks.createTransaction({
+    assetId: network === "mainnet" ? "SUI" : "SUI_TEST",
+    source: { type: PeerType.VAULT_ACCOUNT, id: vaultAccountId },
+    operation: TransactionOperation.RAW,
+    extraParameters: {
+      rawMessageData: {
+        messages: [
+          { content: digestHex }, // Send intent message digest, not raw transaction
+        ]
+      },
+      algorithm: "MPC_EDDSA_ED25519"
+    },
+    note: "Sign Sui transaction (intent message digest)"
+  });
+
+  console.log("Transaction created:", txRes.id);
+
+  // 2. Wait for the transaction to be signed
+  let tx;
+  do {
+    tx = await fireblocks.getTransactionById(txRes.id);
+    if (!["CONFIRMED", "CANCELLED", "REJECTED", "FAILED"].includes(tx.status)) {
+      console.log(`Waiting for signature... Current status: ${tx.status}`);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
+  } while (!["COMPLETED", "CONFIRMED", "CANCELLED", "REJECTED", "FAILED"].includes(tx.status));
+
+  // 3. Extract signatures
+  const signedMessages = tx.signedMessages;
+  console.log("Signed Messages:", signedMessages);
+
+  console.log('Public Key:', publicKeyToSuiAddress(signedMessages[0].publicKey));
+  console.log('Full Sig:', signedMessages[0].signature.fullSig);
+
+  let fullSig = signedMessages[0].signature.fullSig;
+  let publicKey = signedMessages[0].publicKey;
+
+  // Verify the signature before returning
+  const isValid = await verifyFireblocksSignature(transactionBytes, fullSig, publicKey);
+  if (!isValid) {
+    throw new Error(
+      'Fireblocks signature verification failed. ' +
+      'The signature does not match the intent message digest. ' +
+      'Make sure Fireblocks signed the intent message digest, not the raw transaction bytes.'
+    );
+  }
+  console.log('✅ Signature verification passed');
+
+  return { fullSig, publicKey };
 }
 
 /**
- * Get all stakes for the wallet
- * @param {string} walletAddress - The wallet address
- * @returns {Promise<Array>} - Array of stake objects
+ * Convert Fireblocks public key (hex) to Sui address
+ * @param publicKeyHex Hex-encoded public key from Fireblocks
+ * @returns Sui address string
  */
-async function getStakes(walletAddress) {
-    const response = await axios.post(`${FIGMENT_API_URL}/stakes`, {
-        delegator_address: walletAddress
-    }, { headers: API_HEADERS });
-
-    return response.data.stakes;
-}
-
-/**
- * Create withdraw transaction using Figment API
- * @param {string} walletAddress - The delegator address
- * @param {string} stakedSuiId - The staked SUI ID to withdraw
- * @returns {Promise<Object>} - The response containing unsigned transaction and signing payload
- */
-async function createWithdrawTransaction(walletAddress, stakedSuiId) {
-    const response = await axios.post(`${FIGMENT_API_URL}/withdraw`, {
-        delegator_address: walletAddress,
-        staked_sui_id: stakedSuiId,
-        // gas_budget: "1000000" // Optional: Gas budget in mist
-    }, { headers: API_HEADERS });
-
-    return response.data.data;
-}
-
-/**
- * Wait for the transaction to complete by polling Fireblocks
- * @param {Transaction} fbTx - The Fireblocks transaction
- * @returns {Promise<Transaction>} - The completed transaction
- */
-async function waitForTxCompletion(fbTx) {
-  let tx = fbTx;
-
-  while (tx.status != TransactionStatus.COMPLETED) {
-      if(tx.status == TransactionStatus.BLOCKED ||
-         tx.status == TransactionStatus.FAILED || 
-         tx.status == TransactionStatus.REJECTED || 
-         tx.status == TransactionStatus.CANCELLED) {
-          console.log("Transaction's status: " + tx.status);
-          
-          throw Error("Exiting the operation due to error");
-      }
-      console.log("Transaction's status:",(await fireblocks.getTransactionById(fbTx.id)).status);
-      setTimeout(() => { }, 4000);
+function publicKeyToSuiAddress(publicKeyHex) {
+  try {
+      // Remove '0x' prefix if present
+      const cleanHex = publicKeyHex.startsWith('0x') 
+          ? publicKeyHex.slice(2) 
+          : publicKeyHex;
       
-      tx = await fireblocks.getTransactionById(fbTx.id);
-                  
+      // Convert hex to bytes
+      const publicKeyBytes = fromHex(cleanHex);
+      
+      // Create Ed25519PublicKey object
+      const publicKey = new Ed25519PublicKey(publicKeyBytes);
+      
+      // Convert to Sui address
+      const suiAddress = publicKey.toSuiAddress();
+      console.log('Sui Address:', suiAddress);
+      
+      return suiAddress;
+  } catch (error) {
+      throw new Error(`Failed to convert public key to Sui address: ${error}`);
+  }
+}
+
+/**
+ * Converts a Fireblocks signed message to Sui's serialized signature format
+ * Sui signature format: flag (1 byte) || signature (64 bytes) || publicKey (32 bytes)
+ */
+function convertFireblocksSignatureToSui(
+  fullSig,
+  publicKey
+) {
+  // ED25519 flag is 0x00
+  const flag = 0x00;
+  
+  // Convert hex strings to bytes using the Sui SDK utility
+  const signatureBytes = fromHex(fullSig);
+  const publicKeyBytes = fromHex(publicKey);
+  
+  // Validate lengths
+  if (signatureBytes.length !== 64) {
+    throw new Error(`Invalid signature length: expected 64 bytes, got ${signatureBytes.length}`);
+  }
+  if (publicKeyBytes.length !== 32) {
+    throw new Error(`Invalid public key length: expected 32 bytes, got ${publicKeyBytes.length}`);
   }
   
-  return (await fireblocks.getTransactionById(fbTx.id));
+  // Create serialized signature: flag || signature || publicKey
+  const serializedSignature = new Uint8Array(1 + signatureBytes.length + publicKeyBytes.length);
+  serializedSignature.set([flag], 0);
+  serializedSignature.set(signatureBytes, 1);
+  serializedSignature.set(publicKeyBytes, 1 + signatureBytes.length);
+  
+  // Return as base64 encoded string
+  return toBase64(serializedSignature);
 }
 
-/**
- * Sign transaction with Fireblocks raw signing
- * @param {string} payload - The payload to sign (either signing_payload or sha256 of unsigned_transaction_serialized)
- * @param {string} operation - The operation type (STAKE or WITHDRAW)
- * @returns {Promise<Transaction>} - The signed transaction
- */
-async function signWithFireblocks(payload, operation = 'STAKE') {
-    const note = operation === 'STAKE' 
-        ? `Stake ${STAKE_AMOUNT} SUI to ${VALIDATOR_ADDRESS} on ${NETWORK}`
-        : `Withdraw SUI stake on ${NETWORK}`;
-    
-    const fbTx = await fireblocks.createTransaction({
-        assetId: FIREBLOCKS_ASSET_ID,
-        operation: 'RAW',
-        source: {
-            type: PeerType.VAULT_ACCOUNT,
-            id: String(VAULT_ACCOUNT_ID)
-        },
-        note,
-        extraParameters: {
-            rawMessageData: {
-                messages: [{
-                    content: payload.startsWith('0x') ? payload.slice(2) : payload
-                }]
-            }
-        }
-    });
 
-    return (await waitForTxCompletion(fbTx));
-}
-
-/**
- * Process the signing payload from Figment API response
- * @param {Object} responseData - The response data from Figment API
- * @returns {string} - The processed payload for Fireblocks signing
- */
-function processSigningPayload(responseData) {
-    // If signing_payload is empty, use unsigned_transaction_serialized and sha256 it
-    if (!responseData.signing_payload || responseData.signing_payload === '') {
-        const hash = crypto.createHash('sha256');
-        hash.update(responseData.unsigned_transaction_serialized);
-        return hash.digest('hex');
-    }
-    
-    return responseData.signing_payload;
-}
-
-/**
- * Main function to execute the e2e staking flow
- */
 async function main() {
     try {
-        // Get the Fireblocks wallet address
-        const walletInfo = await fireblocks.getDepositAddresses(VAULT_ACCOUNT_ID, FIREBLOCKS_ASSET_ID);
-        const walletAddress = walletInfo[0].address;
-        console.log(`Using wallet address: ${walletAddress}`);
+        const vaultAddresses = await fireblocks.getDepositAddresses(vaultAccountId, network === "mainnet" ? "SUI" : "SUI_TEST");
+        const delegatorAddress = vaultAddresses[0].address;
+        console.log('Delegator Address:', delegatorAddress);
+        // generate stake payload
+        let response = await generateStakePayload(stakeAmount, validatorAccount, delegatorAddress);
+        let unsignedTransactionHex = response.data.unsigned_transaction_serialized;
+        console.log('Unsigned Transaction:', unsignedTransactionHex);
 
-        // Step 1: Create the stake transaction
-        console.log('Creating stake transaction...');
-        const stakeResponse = await createStakeTransaction(walletAddress, VALIDATOR_ADDRESS);
-        const unsignedTransactionSerialized = stakeResponse.unsigned_transaction_serialized;
-        console.log('Stake response: ', stakeResponse);
+        // sign transaction - now sends intent message digest to Fireblocks
+        let { fullSig, publicKey } = await signSuiTxWithFireblocks(unsignedTransactionHex);
+        console.log('Fully Signed Transaction:', fullSig);
+        let suiSignature = convertFireblocksSignatureToSui(fullSig, publicKey);
+        console.log('Sui Signature:', suiSignature);
         
-        // Step 2: Process the signing payload
-        const signingPayload = processSigningPayload(stakeResponse);
-        console.log('Signing payload processed: ', signingPayload);
-
-        // Step 3: Sign the transaction with Fireblocks
-        console.log('Signing transaction with Fireblocks...');
-        const signedTx = await signWithFireblocks(unsignedTransactionSerialized, 'STAKE');
-        const signature = signedTx.signedMessages[0].signature.fullSig;
-        console.log('Transaction signed successfully: ', signature);
-  
-
-        // Step 4: Broadcast the signed transaction
-        console.log('Broadcasting transaction...');
-        const txHash = await broadcastTransaction(signature, unsignedTransactionSerialized);
-
-        const explorerUrl = `${EXPLORER_BASE_URL}${txHash}${NETWORK === 'testnet' ? '?network=testnet' : ''}`;
-        console.log(`Staked ${STAKE_AMOUNT} SUI to ${VALIDATOR_ADDRESS} successfully!`);
-        console.log('View transaction on explorer:', explorerUrl);
-
-        // Step 5: Get stakes to verify
-        console.log('Fetching stakes...');
-        const stakes = await getStakes(walletAddress);
-        console.log(`Found ${stakes.length} stakes`);
-        console.log('Stakes: ', stakes);
-
-         // // Step 6: Demonstrate withdraw (if we have stakes)
-         // if (stakes.length > 0) {
-         //     console.log('Demonstrating withdraw flow...');
-         //     const firstStake = stakes[0];
-         //     console.log(`Withdrawing stake with ID: ${firstStake.staked_sui_id}`);
-             
-         //     // Create withdraw transaction
-         //     const withdrawResponse = await createWithdrawTransaction(walletAddress, firstStake.staked_sui_id);
-             
-         //     // Process signing payload for withdraw
-         //     const withdrawSigningPayload = processSigningPayload(withdrawResponse);
-             
-         //     // Sign withdraw transaction
-         //     const signedWithdrawTx = await signWithFireblocks(withdrawSigningPayload, 'WITHDRAW');
-             
-         //     // Broadcast withdraw transaction
-         //     const withdrawTxHash = await broadcastTransaction(signedWithdrawTx.signedMessage);
-             
-         //     const withdrawExplorerUrl = `${EXPLORER_BASE_URL}${withdrawTxHash}${NETWORK === 'testnet' ? '?network=testnet' : ''}`;
-         //     console.log('Withdraw transaction successful!');
-         //     console.log('View withdraw transaction on explorer:', withdrawExplorerUrl);
-         // }
+        // broadcast transaction
+        let result = await broadcast(unsignedTransactionHex, suiSignature);
+        console.log('Response:', result);
 
     } catch (error) {
-        console.log(error);
-        console.error('Error:', error.message);
+        console.error("❌ Error broadcasting transaction:", error);
     }
-}
+};
 
-main();
+// We recommend this pattern to be able to use async/await everywhere
+// and properly handle errors.
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
