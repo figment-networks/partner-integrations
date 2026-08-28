@@ -23,7 +23,7 @@ Staking examples using [Fireblocks](https://www.fireblocks.com/) MPC custody.
    - `FIGMENT_API_KEY` - Your Figment API key
    - `FIREBLOCKS_API_KEY` - Your Fireblocks API key
    - `FIREBLOCKS_SECRET_KEY` - Your Fireblocks secret key (the full PEM content)
-   - `FIREBLOCKS_VAULT_ID` - Your Fireblocks vault account ID
+   - `FIREBLOCKS_VAULT_ACCOUNT_ID` - Your Fireblocks vault account ID
 
 3. Install dependencies:
    ```bash

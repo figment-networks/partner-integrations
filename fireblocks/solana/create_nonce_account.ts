@@ -17,7 +17,6 @@ import {
     NONCE_ACCOUNT_LENGTH,
   } from "@solana/web3.js";
   import fs from "fs";
-  import path from "path";
   import {
     FireblocksSDK,
     TransactionStatus,
@@ -27,17 +26,14 @@ import {
   import { config } from "dotenv";
   
   // Load solana/.env or repo root .env
-  config({ path: path.join(__dirname, ".env") });
   config();
   
   /* ---------- Config ---------- */
   const NETWORK = process.env.NETWORK || "devnet"; // "devnet" | "mainnet"
-  const VAULT_ACCOUNT_ID = process.env.FIREBLOCKS_VAULT_ACCOUNT_IDS || "1";
+  const VAULT_ACCOUNT_ID = process.env.FIREBLOCKS_VAULT_ACCOUNT_ID || "1";
   const FIREBLOCKS_ASSET_ID = NETWORK === "mainnet" ? "SOL" : "SOL_TEST";
   
-  const secretKeyPath =
-    process.env.FIREBLOCKS_SECRET_KEY_PATH ||
-    path.join(__dirname, "../../credentials/fireblocks_secret.key");
+  const secretKeyPath = process.env.FIREBLOCKS_SECRET_KEY_PATH || "";
   const secretKey = fs.readFileSync(secretKeyPath, "utf8");
   const apiKey = process.env.FIREBLOCKS_API_KEY || "";
   
@@ -50,30 +46,30 @@ import {
   // returns Unauthorized code -7 for this pair. Override via FIREBLOCKS_BASE_URL.
   const FIREBLOCKS_BASE_URL =
     process.env.FIREBLOCKS_BASE_URL || "https://api.fireblocks.io";
-  // #region agent log
-  fetch("http://127.0.0.1:7581/ingest/34f5d292-8894-4eba-8f3e-3f953e106378", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "729395",
-    },
-    body: JSON.stringify({
-      sessionId: "729395",
-      runId: process.env.DEBUG_RUN_ID || "nonce-create",
-      hypothesisId: "URL",
-      location: "create_nonce_account_fireblocks.ts:init",
-      message: "Fireblocks SDK init (no secrets)",
-      data: {
-        baseUrl: FIREBLOCKS_BASE_URL,
-        vault: VAULT_ACCOUNT_ID,
-        asset: FIREBLOCKS_ASSET_ID,
-        secretPath: secretKeyPath,
-        apiKeyLen: apiKey.length,
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
+  // // #region agent log
+  // fetch("http://127.0.0.1:7581/ingest/34f5d292-8894-4eba-8f3e-3f953e106378", {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //     "X-Debug-Session-Id": "729395",
+  //   },
+  //   body: JSON.stringify({
+  //     sessionId: "729395",
+  //     runId: process.env.DEBUG_RUN_ID || "nonce-create",
+  //     hypothesisId: "URL",
+  //     location: "create_nonce_account_fireblocks.ts:init",
+  //     message: "Fireblocks SDK init (no secrets)",
+  //     data: {
+  //       baseUrl: FIREBLOCKS_BASE_URL,
+  //       vault: VAULT_ACCOUNT_ID,
+  //       asset: FIREBLOCKS_ASSET_ID,
+  //       secretPath: secretKeyPath,
+  //       apiKeyLen: apiKey.length,
+  //     },
+  //     timestamp: Date.now(),
+  //   }),
+  // }).catch(() => {});
+  // // #endregion
   const fireblocks = new FireblocksSDK(secretKey, apiKey, FIREBLOCKS_BASE_URL);
   
   const connection = new Connection(
