@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "@bitgo/blake2b": "^3.2.4",
+    "@bitgo/sdk-api": "^1.86.1",
+    "@bitgo/sdk-coin-eth": "^25.14.0",
+    "@bitgo/sdk-coin-sol": "^7.23.1",
+    "@solana/web3.js": "^1.98.4",
+    "axios": "^1.13.2",
+    "bs58": "^6.0.0",
+    "cuid": "^3.0.0",
+    "dotenv": "^17.2.3",
+    "ethers": "^6.16.0",
+    "readline": "^1.3.0",
+    "zod": "^4.1.13"
+  }
+}
