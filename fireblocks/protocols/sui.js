@@ -16,7 +16,7 @@ const fireblocks = new FireblocksSDK(fireblocks_secretKey, fireblocks_apiKey);
 // User Inputs
 const stakeAmount = process.env.SUI_STAKE_AMOUNT ? Number(process.env.SUI_STAKE_AMOUNT) : 1;
 const validatorAccount = process.env.SUI_VALIDATOR_ACCOUNT || '0x22b35a7481fb136e5585c43421cf8ab49d0e219e902dedc40c2778acdcc7bc9c'; //Figment validator address on testnet "0x22b35a7481fb136e5585c43421cf8ab49d0e219e902dedc40c2778acdcc7bc9c";
-const vaultAccountId = process.env.FIREBLOCKS_VAULT_ID || ''; // Your Fireblocks vault ID
+const vaultAccountId = process.env.FIREBLOCKS_VAULT_ACCOUNT_ID || ''; // Your Fireblocks vault ID
 const network = process.env.NETWORK || "testnet";
 
 
